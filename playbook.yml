@@ -1,0 +1,13 @@
+---
+# =============================================================================
+# playbook.yml
+# Applies the postgresql role to every host in the postgresql_servers group,
+# which (see inventory/hosts.ini) can be CentOS-only, Ubuntu-only, or both
+# at once — the role auto-detects the OS per host and behaves accordingly.
+# =============================================================================
+- name: Deploy and configure PostgreSQL
+  hosts: postgresql_servers
+  become: true
+  gather_facts: false
+  roles:
+    - postgresql

@@ -1,0 +1,18 @@
+---
+# Applies to every host regardless of OS.
+postgresql_version: "16"
+postgresql_max_connections: 200
+postgresql_shared_buffers: "256MB"
+
+postgresql_databases:
+  - name: appdb
+    encoding: UTF8
+
+postgresql_users:
+  - name: appuser
+    password: "{{ vault_appuser_password | default('changeme') }}"
+    role_attr_flags: "CREATEDB,NOSUPERUSER"
+
+# Example of per-OS overrides — create group_vars/centos.yml or
+# group_vars/ubuntu.yml if a given group needs a different version, e.g.:
+#   postgresql_version: "15"

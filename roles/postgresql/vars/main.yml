@@ -1,0 +1,5 @@
+---
+# Common (non-OS-specific) internal variables can go here.
+# OS-specific vars (RedHat.yml / Debian.yml) are pulled in dynamically
+# by tasks/main.yml based on ansible_os_family, which is what keeps
+# this role OS-independent.

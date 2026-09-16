@@ -1,0 +1,26 @@
+---
+# =============================================================================
+# roles/postgresql/tasks/configure.yml
+# Deploys templated config files. Restart logic itself lives in
+# handlers/main.yml (never inline here) — these tasks only notify it.
+# =============================================================================
+
+- name: Deploy postgresql.conf from Jinja2 template
+  ansible.builtin.template:
+    src: postgresql.conf.j2
+    dest: "{{ postgresql_config_dir }}/postgresql.conf"
+    owner: "{{ postgresql_system_user }}"
+    group: "{{ postgresql_system_group }}"
+    mode: "0640"
+    backup: true
+  notify: restart postgresql
+
+- name: Deploy pg_hba.conf from Jinja2 template
+  ansible.builtin.template:
+    src: pg_hba.conf.j2
+    dest: "{{ postgresql_config_dir }}/pg_hba.conf"
+    owner: "{{ postgresql_system_user }}"
+    group: "{{ postgresql_system_group }}"
+    mode: "0640"
+    backup: true
+  notify: restart postgresql

@@ -1,0 +1,3 @@
+environment: dev
+postgresql_port: 5432
+postgresql_database: devdb

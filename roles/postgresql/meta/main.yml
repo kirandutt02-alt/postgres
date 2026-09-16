@@ -1,0 +1,20 @@
+---
+galaxy_info:
+  role_name: postgresql
+  description: Installs and configures a version-specific PostgreSQL server on CentOS/RHEL or Ubuntu/Debian
+  license: MIT
+  min_ansible_version: "2.14"
+  platforms:
+    - name: EL
+      versions: [8, 9]
+    - name: Ubuntu
+      versions: [focal, jammy, noble]
+    - name: Debian
+      versions: [bullseye, bookworm]
+  galaxy_tags:
+    - postgresql
+    - database
+    - centos
+    - ubuntu
+
+dependencies: []

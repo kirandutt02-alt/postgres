@@ -1,0 +1,65 @@
+---
+# =============================================================================
+# roles/postgresql/tasks/install-Debian.yml
+# Version-specific install path for Ubuntu / Debian.
+# =============================================================================
+
+- name: Install prerequisite packages
+  ansible.builtin.apt:
+    name:
+      - gnupg2
+      - apt-transport-https
+      - ca-certificates
+      - curl
+    state: present
+    update_cache: true
+
+- name: Download PGDG signing key
+  ansible.builtin.get_url:
+    url: "{{ postgresql_pgdg_key_url }}"
+    dest: /tmp/pgdg-key.asc
+    mode: "0644"
+  when: postgresql_use_pgdg_repo
+
+- name: Dearmor PGDG signing key into keyring
+  ansible.builtin.command: >
+    gpg --batch --yes --dearmor
+    -o {{ postgresql_pgdg_keyring_path }} /tmp/pgdg-key.asc
+  args:
+    creates: "{{ postgresql_pgdg_keyring_path }}"
+  when: postgresql_use_pgdg_repo
+
+- name: Add PGDG apt repository (gives access to any PostgreSQL version)
+  ansible.builtin.apt_repository:
+    repo: >-
+      deb [signed-by={{ postgresql_pgdg_keyring_path }}]
+      https://apt.postgresql.org/pub/repos/apt
+      {{ ansible_distribution_release }}-pgdg main
+    state: present
+    filename: pgdg
+  when: postgresql_use_pgdg_repo
+
+- name: Update apt cache after adding PGDG repo
+  ansible.builtin.apt:
+    update_cache: true
+  when: postgresql_use_pgdg_repo
+
+- name: Install PostgreSQL {{ postgresql_version }} packages
+  ansible.builtin.apt:
+    name: "{{ postgresql_packages }}"
+    state: present
+
+- name: Create the PostgreSQL {{ postgresql_version }} cluster if it doesn't already exist
+  ansible.builtin.command: >
+    pg_createcluster {{ postgresql_version }} main
+    --port {{ postgresql_port }}
+    -- --auth-local peer --auth-host scram-sha-256
+  args:
+    creates: "{{ postgresql_data_dir }}/PG_VERSION"
+  become: true
+
+- name: Ensure PostgreSQL service is enabled and started
+  ansible.builtin.service:
+    name: "{{ postgresql_service_name }}"
+    enabled: "{{ postgresql_service_enabled }}"
+    state: "{{ postgresql_service_state }}"
