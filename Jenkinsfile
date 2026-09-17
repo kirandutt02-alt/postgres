@@ -29,12 +29,6 @@ pipeline {
             }
         }
 
-        stage('Debug') {
-            steps {
-                sh 'pwd && find . -name "site.yml"'
-            }
-        }
-
         stage('User Approval') {
             when {
                 expression {
@@ -51,14 +45,14 @@ pipeline {
                 executePlaybook(config.CODE_BASE_PATH)
             }
         }
+    }
 
-        stage('Notification') {
-            steps {
-                sendNotification(
-                    config.SLACK_CHANNEL_NAME,
-                    config.ACTION_MESSAGE
-                )
-            }
+    post {
+        always {
+            sendNotification(
+                config.SLACK_CHANNEL_NAME,
+                config.ACTION_MESSAGE
+            )
         }
     }
 }
