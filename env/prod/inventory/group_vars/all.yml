@@ -1,3 +1,0 @@
-environment: prod
-postgresql_port: 5432
-postgresql_database: proddb
