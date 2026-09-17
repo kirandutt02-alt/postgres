@@ -1,10 +1,5 @@
-# Ansible managed: {{ ansible_managed }}
-# -----------------------------------------------------------------------
-# pg_hba.conf — generated for {{ inventory_hostname }}
-# DO NOT EDIT BY HAND — managed by the `postgresql` Ansible role.
-# Rules are driven entirely by the postgresql_hba_entries variable.
-# -----------------------------------------------------------------------
-# TYPE    DATABASE    USER    ADDRESS         METHOD
-{% for entry in postgresql_hba_entries %}
-{{ '%-8s'|format(entry.type) }}{{ '%-12s'|format(entry.database) }}{{ '%-8s'|format(entry.user) }}{% if entry.address is defined %}{{ '%-16s'|format(entry.address) }}{% else %}{{ '%-16s'|format('') }}{% endif %}{{ entry.auth_method }}
+# {{ ansible_managed }}
+# TYPE  DATABASE        USER            ADDRESS                 METHOD
+{% for line in postgresql_hba_entries %}
+{{ line }}
 {% endfor %}
