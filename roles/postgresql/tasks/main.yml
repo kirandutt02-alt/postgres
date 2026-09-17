@@ -1,49 +1,37 @@
-- name: Install PostgreSQL packages
-  ansible.builtin.apt:
-    name:
-      - postgresql
-      - postgresql-contrib
-      - python3-psycopg2
-      - acl
-    state: present
-    update_cache: true
+    - name: Install PostgreSQL packages
+      ansible.builtin.apt:
+        name:
+          - postgresql
+          - postgresql-contrib
+          - python3-psycopg2
+          - acl
+        state: present
+        update_cache: true
 
-- name: Ensure PostgreSQL is started and enabled
-  ansible.builtin.service:
-    name: postgresql
-    state: started
-    enabled: true
+    - name: Ensure PostgreSQL is started and enabled
+      ansible.builtin.service:
+        name: postgresql
+        state: started
+        enabled: true
 
-- name: Deploy postgresql.conf
-  ansible.builtin.template:
-    src: postgresql.conf.j2
-    dest: "{{ postgresql_conf_dir }}/postgresql.conf"
-    owner: postgres
-    group: postgres
-    mode: "0644"
-  notify: restart postgresql
+    - name: Detect installed PostgreSQL version
+      ansible.builtin.command: ls /etc/postgresql
+      register: pg_installed_versions
+      changed_when: false
 
-- name: Deploy pg_hba.conf
-  ansible.builtin.template:
-    src: pg_hba.conf.j2
-    dest: "{{ postgresql_conf_dir }}/pg_hba.conf"
-    owner: postgres
-    group: postgres
-    mode: "0640"
-  notify: restart postgresql
+    - name: Set postgresql_conf_dir to the actual installed version
+      ansible.builtin.set_fact:
+        postgresql_conf_dir: "/etc/postgresql/{{ pg_installed_versions.stdout_lines[0] }}/main"
 
-- name: Ensure app database user exists
-  become_user: postgres
-  community.postgresql.postgresql_user:
-    name: "{{ postgresql_db_user }}"
-    password: "{{ postgresql_db_password }}"
-    encrypted: true
-    state: present
-  no_log: true
+    - name: Deploy postgresql.conf
+      ansible.builtin.template:
+        src: postgresql.conf.j2
+        dest: "{{ postgresql_conf_dir }}/postgresql.conf"
+      notify: restart postgresql
 
-- name: Ensure app database exists
-  become_user: postgres
-  community.postgresql.postgresql_db:
-    name: "{{ postgresql_db_name }}"
-    owner: "{{ postgresql_db_user }}"
-    state: present
+    - name: Deploy pg_hba.conf
+      ansible.builtin.template:
+        src: pg_hba.conf.j2
+        dest: "{{ postgresql_conf_dir }}/pg_hba.conf"
+      notify: restart postgresql
+    
