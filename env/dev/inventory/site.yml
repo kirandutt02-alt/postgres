@@ -1,0 +1,9 @@
+- name: Deploy PostgreSQL - dev
+  hosts: all
+  become: true
+  vars:
+    postgresql_db_name: dev_appdb
+    postgresql_db_user: dev_appuser
+    postgresql_db_password: "dev_changeme"
+  roles:
+    - postgresql
