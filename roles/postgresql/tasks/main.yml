@@ -1,33 +1,49 @@
----
-# =============================================================================
-# roles/postgresql/tasks/main.yml
-# Entry point. Detects the OS family and dispatches to the matching task
-# file, so the exact same role runs unmodified on CentOS, Ubuntu, or both
-# at once in the same play (see inventory/hosts.ini + playbook.yml).
-# =============================================================================
+- name: Install PostgreSQL packages
+  ansible.builtin.apt:
+    name:
+      - postgresql
+      - postgresql-contrib
+      - python3-psycopg2
+      - acl
+    state: present
+    update_cache: true
 
-- name: Fail fast on unsupported operating systems
-  ansible.builtin.fail:
-    msg: >
-      This role supports only RedHat-family (CentOS/RHEL/Rocky/Alma) and
-      Debian-family (Ubuntu/Debian) hosts. Detected: {{ ansible_distribution }}
-      {{ ansible_distribution_version }} (family: {{ ansible_os_family }}).
-  when: ansible_os_family not in ['RedHat', 'Debian']
+- name: Ensure PostgreSQL is started and enabled
+  ansible.builtin.service:
+    name: postgresql
+    state: started
+    enabled: true
 
-- name: Load OS-family specific variables
-  ansible.builtin.include_vars: "{{ ansible_os_family }}.yml"
+- name: Deploy postgresql.conf
+  ansible.builtin.template:
+    src: postgresql.conf.j2
+    dest: "{{ postgresql_conf_dir }}/postgresql.conf"
+    owner: postgres
+    group: postgres
+    mode: "0644"
+  notify: restart postgresql
 
-- name: Install PostgreSQL {{ postgresql_version }} on RedHat family
-  ansible.builtin.include_tasks: install-RedHat.yml
-  when: ansible_os_family == "RedHat"
+- name: Deploy pg_hba.conf
+  ansible.builtin.template:
+    src: pg_hba.conf.j2
+    dest: "{{ postgresql_conf_dir }}/pg_hba.conf"
+    owner: postgres
+    group: postgres
+    mode: "0640"
+  notify: restart postgresql
 
-- name: Install PostgreSQL {{ postgresql_version }} on Debian family
-  ansible.builtin.include_tasks: install-Debian.yml
-  when: ansible_os_family == "Debian"
+- name: Ensure app database user exists
+  become_user: postgres
+  community.postgresql.postgresql_user:
+    name: "{{ postgresql_db_user }}"
+    password: "{{ postgresql_db_password }}"
+    encrypted: true
+    state: present
+  no_log: true
 
-- name: Deploy PostgreSQL configuration from templates
-  ansible.builtin.include_tasks: configure.yml
-
-- name: Provision databases and roles
-  ansible.builtin.include_tasks: database.yml
-  when: (postgresql_databases | length > 0) or (postgresql_users | length > 0)
+- name: Ensure app database exists
+  become_user: postgres
+  community.postgresql.postgresql_db:
+    name: "{{ postgresql_db_name }}"
+    owner: "{{ postgresql_db_user }}"
+    state: present
