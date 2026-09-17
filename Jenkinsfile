@@ -18,7 +18,7 @@ pipeline {
         stage('Read Config') {
             steps {
                 script {
-                    config = readProperties file: 'config/${params.ENVIRONMENT}.properties'
+                    config = readProperties file: "config/${params.ENVIRONMENT}.properties"
                 }
             }
         }
