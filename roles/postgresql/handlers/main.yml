@@ -1,13 +1,4 @@
----
-# =============================================================================
-# roles/postgresql/handlers/main.yml
-# Handlers live ONLY here — never inline inside tasks/*.yml. Tasks trigger
-# this via `notify: restart postgresql`; it fires once at the end of the
-# play, only if a notifying task actually changed something.
-# =============================================================================
-
 - name: restart postgresql
   ansible.builtin.service:
-    name: "{{ postgresql_service_name }}"
+    name: postgresql
     state: restarted
-  listen: restart postgresql
