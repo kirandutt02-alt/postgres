@@ -1,0 +1,9 @@
+- name: Deploy PostgreSQL - prod
+  hosts: all
+  become: true
+  vars:
+    postgresql_db_name: prod_appdb
+    postgresql_db_user: prod_appuser
+    postgresql_db_password: "prod_changeme"
+  roles:
+    - postgresql
