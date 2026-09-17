@@ -29,6 +29,12 @@ pipeline {
             }
         }
 
+        stage('Debug') {
+            steps {
+                sh 'pwd && find . -name "site.yml"'
+            }
+        }
+
         stage('User Approval') {
             when {
                 expression {
