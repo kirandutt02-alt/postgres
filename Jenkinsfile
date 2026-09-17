@@ -5,12 +5,31 @@ def config
 pipeline {
     agent any
 
+    parameters {
+        choice(
+            name: 'ENVIRONMENT',
+            choices: ['dev', 'staging', 'prod'],
+            description: 'Target environment to deploy'
+        )
+    }
+
     stages {
 
         stage('Read Config') {
             steps {
                 script {
-                    config = readProperties file: 'config.properties'
+                    String configFile = "config/${params.ENVIRONMENT}.properties"
+
+                    if (!fileExists(configFile)) {
+                        error "Config file not found: ${configFile}"
+                    }
+
+                    config = readProperties file: configFile
+
+                    if (config.ENVIRONMENT != params.ENVIRONMENT) {
+                        error "Mismatch: params.ENVIRONMENT='${params.ENVIRONMENT}' " +
+                              "but ${configFile} declares ENVIRONMENT='${config.ENVIRONMENT}'"
+                    }
                 }
             }
         }
@@ -44,6 +63,23 @@ pipeline {
                     config.SLACK_CHANNEL_NAME,
                     config.ACTION_MESSAGE
                 )
+            }
+        }
+    }
+
+    post {
+        failure {
+            script {
+                if (config) {
+                    sendNotification(config.SLACK_CHANNEL_NAME, "${config.ACTION_MESSAGE} — FAILED")
+                }
+            }
+        }
+        aborted {
+            script {
+                if (config) {
+                    sendNotification(config.SLACK_CHANNEL_NAME, "${config.ACTION_MESSAGE} — ABORTED (approval denied or timed out)")
+                }
             }
         }
     }
