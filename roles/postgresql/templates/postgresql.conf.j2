@@ -1,58 +1,7 @@
-# Ansible managed: {{ ansible_managed }}
-# -----------------------------------------------------------------------
-# postgresql.conf — generated for {{ inventory_hostname }}
-# PostgreSQL version: {{ postgresql_version }}
-# DO NOT EDIT BY HAND — managed by the `postgresql` Ansible role.
-# -----------------------------------------------------------------------
-#------------------------------------------------------------------------------
-# FILE LOCATIONS
-# Required on Debian/Ubuntu — pg_ctlcluster reads data_directory out of this
-# file to validate the cluster before starting it; without it, start fails
-# with "Invalid data directory for cluster". Harmless/redundant on RedHat.
-#------------------------------------------------------------------------------
-data_directory = '{{ postgresql_data_dir }}'
-hba_file = '{{ postgresql_config_dir }}/pg_hba.conf'
-ident_file = '{{ postgresql_config_dir }}/pg_ident.conf'
-
-
-#------------------------------------------------------------------------------
-# CONNECTIONS AND AUTHENTICATION
-#------------------------------------------------------------------------------
+# {{ ansible_managed }}
 listen_addresses = '{{ postgresql_listen_addresses }}'
 port = {{ postgresql_port }}
-max_connections = {{ postgresql_max_connections }}
 
-#------------------------------------------------------------------------------
-# RESOURCE USAGE (MEMORY)
-#------------------------------------------------------------------------------
-shared_buffers = '{{ postgresql_shared_buffers }}'
-effective_cache_size = '{{ postgresql_effective_cache_size }}'
-work_mem = '{{ postgresql_work_mem }}'
-maintenance_work_mem = '{{ postgresql_maintenance_work_mem }}'
-{% if postgresql_wal_buffers != '-1' %}
-wal_buffers = '{{ postgresql_wal_buffers }}'
-{% endif %}
-
-#------------------------------------------------------------------------------
-# LOGGING
-#------------------------------------------------------------------------------
-logging_collector = {{ postgresql_logging_collector | lower }}
-log_directory = '{{ postgresql_log_directory }}'
-log_filename = '{{ postgresql_log_filename }}'
-{% if postgresql_log_min_duration_statement | int >= 0 %}
-log_min_duration_statement = {{ postgresql_log_min_duration_statement }}
-{% endif %}
-
-#------------------------------------------------------------------------------
-# SSL
-#------------------------------------------------------------------------------
-ssl = {{ 'on' if postgresql_ssl else 'off' }}
-
-{% if postgresql_extra_conf_settings %}
-#------------------------------------------------------------------------------
-# EXTRA SETTINGS (from postgresql_extra_conf_settings)
-#------------------------------------------------------------------------------
-{% for key, value in postgresql_extra_conf_settings.items() %}
-{{ key }} = {{ value }}
-{% endfor %}
-{% endif %}
+logging_collector = on
+log_directory = 'log'
+log_filename = 'postgresql-%Y-%m-%d.log'
